@@ -1,2 +1,5 @@
+# Do not include the json files
 yelp_json/
-'#*#'
+
+# Ignore Emacs auto-save files
+\#*\#
