@@ -10,20 +10,6 @@ USER_JSON_PATH = "./yelp_json/yelp_academic_dataset_user.json"
 
 DB_NAME = "gyms.db"
 
-def transform_json_to_parquet() -> None:
-    files : List[str] = [BUSINESS_JSON_PATH, REVIEW_JSON_PATH, TIP_JSON_PATH, USER_JSON_PATH]
-    parquet_names : List[str] = ["business", "review", "tip", "user"]
-    for file, name in zip(files, parquet_names):
-        try:
-            df = pd.read_json(file, lines=True, blocksize="64MB")
-            df.to_parquet(f"./data/{name}.parquet", engine="pyarrow", compression="snappy")
-        except FileNotFoundError:
-            print("You are either missing the JSON files or the names are not correct")
-            print("Make sure to download the Yelp Dataset JSON files and set the path to the corresponding constants.")
-            print("https://business.yelp.com/data/resources/open-dataset/")
-            print("Terminating program")
-            quit()
-
 def create_db() -> None:
     con: sqlite3.Connection = sqlite3.connect(DB_NAME)
     cur: sqlite3.Cursor = con.cursor()
@@ -177,13 +163,11 @@ def transform_json_to_sql() -> None:
     populate_business_table()
     print("Business table successfully populated")
 
-    # test ---- delete later
-    con = sqlite3.connect(DB_NAME)
-    cur = con.cursor()
-    print(cur.execute("SELECT * FROM business LIMIT 10").fetchall())
-
 def main() -> int:
-    transform_json_to_sql()
+    try:
+        transform_json_to_sql()
+    except:
+        return 1
     return 0
 
 if __name__ == "__main__":
