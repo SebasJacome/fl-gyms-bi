@@ -1,0 +1,14 @@
+TODO
+
+    * Change the file transformation to something like this:
+	  JSONs -> SQLite -> Parquets
+
+		  With SQLite, I'll perform the fundamental reduction of the databases, leaving only the data that corresponds to what we are interested in: Gyms in Florida.
+
+		  Once we have the cleansed database, we can store this information as parquet to reduce the number of partitions.
+
+		  With the parquet files, we can start with the visualizations
+
+	* Visualizations are still pending
+
+	* Streamlit dashboard pending as well
