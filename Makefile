@@ -1,11 +1,10 @@
 PY=~/.venvs/pds/bin/python
-PIP=~/.venvs/pdf/bin/pip
+PIP=~/.venvs/pds/bin/pip
 PARQUET=./data/business.parquet \
         ./data/review.parquet \
         ./data/user.parquet \
         ./data/tip.parquet
-DB=./gyms.db \
-   ./gyms.db-journal
+DB=./gyms.db
 
 .PHONY: run
 run: $(DB)

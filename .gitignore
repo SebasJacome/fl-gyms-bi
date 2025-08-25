@@ -3,3 +3,6 @@ yelp_json/
 
 # Ignore Emacs auto-save files
 \#*\#
+
+# Ignore sqlite3 db
+*.db
