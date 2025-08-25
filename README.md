@@ -17,7 +17,8 @@ El proyecto final tiene como objetivo aplicar los conocimientos adquiridos a lo 
 
 * Se requiere Python (solo se ha testeado con 3.13) y Pip.
 * https://business.yelp.com/data/resources/open-dataset/
-* 
+* Se requiere GNU Make
+* Se requiere SQLite3
 
 ## Instalación
 
@@ -41,4 +42,3 @@ Si deseas limpiar los archivos generados (.db), usa el comando `make clean`.
 ## Consideraciones
 
 * La base de datos que se genera pesa 5.8 GB, asegúrate de tener suficiente espacio.
-* 
