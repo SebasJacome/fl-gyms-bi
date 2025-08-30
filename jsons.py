@@ -116,7 +116,8 @@ def create_db() -> None:
     con.close()
 
 def populate_business_table() -> None:
-    con: sqlite3.Connection = sqlite3.connect(DB_NAME)
+    con: sqlite3.Connection = sqlite3.connect(DB_NAME, timeout=30)
+    con.execute("PRAGMA journal_mode=WAL;")
     cur: sqlite3.Cursor = con.cursor()
     print("Starting to populate business table")
     with open(BUSINESS_JSON_PATH, "r") as file:
@@ -212,7 +213,8 @@ def populate_business_table() -> None:
     print("Successfully populated the table business and related tables")
 
 def populate_review_table() -> None:
-    con: sqlite3.Connection = sqlite3.connect(DB_NAME)
+    con: sqlite3.Connection = sqlite3.connect(DB_NAME, timeout=30)
+    con.execute("PRAGMA journal_mode=WAL;")
     cur: sqlite3.Cursor = con.cursor()
     print("Starting to populate review table")
     with open(REVIEW_JSON_PATH, "r", encoding="utf-8") as file:
@@ -258,7 +260,8 @@ def populate_review_table() -> None:
 
 
 def populate_tip_table() -> None:
-    con: sqlite3.Connection = sqlite3.connect(DB_NAME)
+    con: sqlite3.Connection = sqlite3.connect(DB_NAME, timeout=30)
+    con.execute("PRAGMA journal_mode=WAL;")
     cur: sqlite3.Cursor = con.cursor()
     print("Starting to populate tip table")
     with open(TIP_JSON_PATH, "r", encoding="utf-8") as file:        
@@ -296,7 +299,8 @@ def populate_tip_table() -> None:
     print("Successfully populated the tip table")
 
 def populate_user_table() -> None:
-    con: sqlite3.Connection = sqlite3.connect(DB_NAME)
+    con: sqlite3.Connection = sqlite3.connect(DB_NAME, timeout=30)
+    con.execute("PRAGMA journal_mode=WAL;")
     cur: sqlite3.Cursor = con.cursor()
     print("Starting to populate user table")
     with open(USER_JSON_PATH, "r") as file:
