@@ -2,7 +2,7 @@ import sqlite3
 from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures import wait
 
-DB = "gyms.db"
+DB = "./data/gyms.db"
 TABLES = ["review", "tip", "business_categories", "business_hours", "business_attributes"]
 
 def drop_orphans(table_name: str) -> None:
@@ -29,7 +29,11 @@ def drop_user_table() -> None:
             WHERE user_id NOT IN (SELECT DISTINCT user_id FROM review)
               AND user_id NOT IN (SELECT DISTINCT user_id FROM tip);
         """)
+
     con.commit()
+
+    cur.execute("VACUUM;") # shrinking the size of the database after cleansing it, from 6GB -> 6MB.
+
     con.close()
     print("User table data has been removed successfully")
 
@@ -61,7 +65,6 @@ def main() -> int:
         e.map(drop_orphans, TABLES)
     drop_user_table()
     return 0
-
 
 if __name__ == "__main__":
     print("exit code:", main())

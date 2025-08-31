@@ -11,7 +11,7 @@ REVIEW_JSON_PATH = "./yelp_json/yelp_academic_dataset_review.json"
 TIP_JSON_PATH = "./yelp_json/yelp_academic_dataset_tip.json"
 USER_JSON_PATH = "./yelp_json/yelp_academic_dataset_user.json"
 
-DB_NAME = "gyms.db"
+DB_NAME = "./data/gyms.db"
 
 def create_db() -> None:
     con: sqlite3.Connection = sqlite3.connect(DB_NAME)

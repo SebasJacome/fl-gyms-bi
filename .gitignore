@@ -6,3 +6,6 @@ yelp_json/
 
 # Ignore sqlite3 db
 *.db*
+
+# Ignore .ropeproject
+.ropeproject/

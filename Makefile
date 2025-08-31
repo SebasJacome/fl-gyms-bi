@@ -1,25 +1,34 @@
-PY=~/.venvs/pds/bin/python
-PIP=~/.venvs/pds/bin/pip
-PARQUET=./data/business.parquet \
+VENV:=$(HOME)/.venvs/bi
+PY:=$(VENV)/bin/python
+PIP:=$(VENV)/bin/pip
+
+PARQUET:=./data/business.parquet \
         ./data/review.parquet \
         ./data/user.parquet \
         ./data/tip.parquet
-DB=./gyms.db
+DB:=./data/gyms.db
 
 .PHONY: run
 run: $(DB)
-	$(PY) processing.py
+	$(PY) export.py
 
 $(DB):
 	@echo "Creating SQLite3 database files..."
 	$(PY) jsons.py
+	@echo "Removing unused rows..."
+	$(PY) processing.py
+
 
 .PHONY: install
-install:
+install:$(VENV)
 	@echo "Installing required dependencies..."
 	$(PIP) install -r requirements.txt
 
+$(VENV):
+	@echo "Creating python virtual environment at $(VENV)..."
+	python3 -m venv $(VENV)
+
 .PHONY: clean
 clean:
-	@echo "Cleaning parquet files..."
-	rm -rf ./data gyms.db
+	@echo "Cleaning data directory..."
+	rm -rf ./data .ropeproject
