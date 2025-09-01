@@ -2,8 +2,6 @@ VENV:=$(HOME)/.venvs/bi
 PY:=$(VENV)/bin/python
 PIP:=$(VENV)/bin/pip
 
-#PARQUET:=./data/yelp.parquet
-
 PARQUET:=./data/business.parquet\
 		 ./data/business_attributes.parquet\
 		 ./data/business_hours.parquet\
@@ -16,7 +14,7 @@ DB:=./data/gyms.db
 
 .PHONY: run
 run: $(PARQUET)
-	@echo "The future's uncertain, and the end is always near."
+	$(PY) atlas.py
 
 $(PARQUET): $(DB)
 	@echo "Creating parquet file..."

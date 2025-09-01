@@ -12,3 +12,5 @@ yelp_json/
 
 # Ignore .ropeproject
 .ropeproject/
+
+.ipynb_checkpoints/
