@@ -57,9 +57,9 @@ def export_all_to_single_parquet() -> None:
 
 
 def main() -> int:
-    #export_to_parquet()
-    export_all_to_single_parquet()
+    export_to_parquet()
     return 0
+    #export_all_to_single_parquet()
 
 if __name__ == "__main__":
     print("exit code:", main())

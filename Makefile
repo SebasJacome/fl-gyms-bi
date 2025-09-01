@@ -2,9 +2,9 @@ VENV:=$(HOME)/.venvs/bi
 PY:=$(VENV)/bin/python
 PIP:=$(VENV)/bin/pip
 
-PARQUET:=./data/yelp.parquet
+#PARQUET:=./data/yelp.parquet
 
-#PARQUET:=./data/business.parquet\
+PARQUET:=./data/business.parquet\
 		 ./data/business_attributes.parquet\
 		 ./data/business_hours.parquet\
 		 ./data/business_categories.parquet\
@@ -24,6 +24,7 @@ $(PARQUET): $(DB)
 
 $(DB):
 	@echo "Creating SQLite3 database files..."
+	mkdir ./data
 	$(PY) jsons.py
 	@echo "Removing unused rows..."
 	$(PY) processing.py

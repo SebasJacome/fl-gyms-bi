@@ -1,13 +1,7 @@
 TODO
 
-    * Change the file transformation to something like this:
-	  JSONs -> SQLite -> Parquets
-
-		  With SQLite, I'll perform the fundamental reduction of the databases, leaving only the data that corresponds to what we are interested in: Gyms in Florida.
-
-		  Once we have the cleansed database, we can store this information as parquet to reduce the number of partitions.
-
-		  With the parquet files, we can start with the visualizations
+	* Normalize the business_hours to store the days and hours into a single column with the next format {"day": (open, close)}
+	  This way, we will have 316 entries in the business_hours df, the same as in business
 
 	* Visualizations are still pending
 

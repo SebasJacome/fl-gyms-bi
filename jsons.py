@@ -16,7 +16,6 @@ DB_NAME = "./data/gyms.db"
 def create_db() -> None:
     con: sqlite3.Connection = sqlite3.connect(DB_NAME)
     cur: sqlite3.Cursor = con.cursor()
-
     cur.execute("""
         CREATE TABLE IF NOT EXISTS business (
             business_id   TEXT PRIMARY KEY,
@@ -117,8 +116,8 @@ def create_db() -> None:
 
 def populate_business_table() -> None:
     con: sqlite3.Connection = sqlite3.connect(DB_NAME, timeout=30)
-    con.execute("PRAGMA journal_mode=WAL;")
     cur: sqlite3.Cursor = con.cursor()
+    cur.execute("PRAGMA journal_mode=WAL;")
     print("Starting to populate business table")
     with open(BUSINESS_JSON_PATH, "r") as file:
         # omiting types for batches just because
@@ -214,8 +213,8 @@ def populate_business_table() -> None:
 
 def populate_review_table() -> None:
     con: sqlite3.Connection = sqlite3.connect(DB_NAME, timeout=30)
-    con.execute("PRAGMA journal_mode=WAL;")
     cur: sqlite3.Cursor = con.cursor()
+    cur.execute("PRAGMA journal_mode=WAL;")
     print("Starting to populate review table")
     with open(REVIEW_JSON_PATH, "r", encoding="utf-8") as file:
         review_batch = []
@@ -261,8 +260,8 @@ def populate_review_table() -> None:
 
 def populate_tip_table() -> None:
     con: sqlite3.Connection = sqlite3.connect(DB_NAME, timeout=30)
-    con.execute("PRAGMA journal_mode=WAL;")
     cur: sqlite3.Cursor = con.cursor()
+    cur.execute("PRAGMA journal_mode=WAL;")
     print("Starting to populate tip table")
     with open(TIP_JSON_PATH, "r", encoding="utf-8") as file:        
         tip_batch = []
@@ -300,8 +299,8 @@ def populate_tip_table() -> None:
 
 def populate_user_table() -> None:
     con: sqlite3.Connection = sqlite3.connect(DB_NAME, timeout=30)
-    con.execute("PRAGMA journal_mode=WAL;")
     cur: sqlite3.Cursor = con.cursor()
+    cur.execute("PRAGMA journal_mode=WAL;")
     print("Starting to populate user table")
     with open(USER_JSON_PATH, "r") as file:
         user_batch = []

@@ -8,8 +8,8 @@ TABLES = ["review", "tip", "business_categories", "business_hours", "business_at
 def drop_orphans(table_name: str) -> None:
     print(f"Dropping {table_name} table data...")
     con: sqlite3.Connection = sqlite3.connect(DB, timeout=30)
-    con.execute("PRAGMA journal_mode=WAL;")
     cur: sqlite3.Cursor = con.cursor()
+    cur.execute("PRAGMA journal_mode=WAL;")
 
     cur.execute(f"""
         DELETE FROM {table_name} 
@@ -59,10 +59,11 @@ def drop_rows() -> None:
 
 def main() -> int:
     drop_rows()
-    with ProcessPoolExecutor() as e:
+#    with ProcessPoolExecutor() as e:
         # No error handling needed in here because the task is simple enough where exceptions are not expected (i think)
         # My understanding is that, since this code will only run after the database has been generated and populated, there shouldn't be anything missing: neither the database nor a table.
-        e.map(drop_orphans, TABLES)
+ #       e.map(drop_orphans, TABLES)
+    [drop_orphans(table) for table in TABLES]
     drop_user_table()
     return 0
 
