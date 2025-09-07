@@ -59,10 +59,6 @@ def drop_rows() -> None:
 
 def main() -> int:
     drop_rows()
-#    with ProcessPoolExecutor() as e:
-        # No error handling needed in here because the task is simple enough where exceptions are not expected (i think)
-        # My understanding is that, since this code will only run after the database has been generated and populated, there shouldn't be anything missing: neither the database nor a table.
- #       e.map(drop_orphans, TABLES)
     [drop_orphans(table) for table in TABLES]
     drop_user_table()
     return 0

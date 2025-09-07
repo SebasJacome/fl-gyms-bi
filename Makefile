@@ -19,6 +19,8 @@ run: $(PARQUET)
 $(PARQUET): $(DB)
 	@echo "Creating parquet file..."
 	$(PY) export.py
+	rm business_hours_merge.parquet business.parquet business_attributes.parquet business_categories.parquet business_hours.parquet gyms.db
+	mv business_merge.parquet business.parquet
 
 $(DB):
 	@echo "Creating SQLite3 database files..."
