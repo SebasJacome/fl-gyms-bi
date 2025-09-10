@@ -3,9 +3,6 @@ PY:=$(VENV)/bin/python
 PIP:=$(VENV)/bin/pip
 
 PARQUET:=./data/business.parquet\
-		 ./data/business_attributes.parquet\
-		 ./data/business_hours.parquet\
-		 ./data/business_categories.parquet\
 		 ./data/review.parquet\
 		 ./data/tip.parquet\
 		 ./data/user.parquet
