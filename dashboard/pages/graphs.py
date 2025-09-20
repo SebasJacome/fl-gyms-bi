@@ -1,10 +1,23 @@
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
 import geopandas as gpd
 import folium
 import branca.colormap as cm
 from folium.plugins import MarkerCluster, HeatMap
+import ast
+from collections import Counter
+import streamlit as st
+
+@st.cache_data
+def load_datasets():
+    df_b = pd.read_parquet("./data/business.parquet")
+    db_r = pd.read_parquet("./data/review.parquet")
+    db_u = pd.read_parquet("./data/tip.parquet")
+
+    return df_b, db_r, db_u
+
 
 def build_graphs():
     def style_plotly(fig, bgcolor="#262730", font_color="white"):
@@ -25,9 +38,7 @@ def build_graphs():
         )
         return fig
 
-    df_b = pd.read_parquet("./data/business.parquet")
-    db_r = pd.read_parquet("./data/review.parquet")
-    db_u = pd.read_parquet("./data/tip.parquet")
+    df_b, db_r, db_u = load_datasets()
 
     df = gpd.GeoDataFrame(
         df_b,
@@ -279,3 +290,152 @@ def build_graphs():
     )
     graphs.append(fig)
     return graphs
+
+
+def horizontal_stars(avg_stars: float, title: str = "") -> go.Figure:
+    total_stars = 5
+    x_positions = np.arange(total_stars)
+    y_positions = [0] * total_stars
+
+    full_stars = int(avg_stars)
+    partial_star = avg_stars - full_stars
+
+    colors = []
+    for i in range(total_stars):
+        if i < full_stars:
+            colors.append("gold")
+        elif i == full_stars and partial_star > 0:
+            colors.append("goldenrod")
+        else:
+            colors.append("lightgray")
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=x_positions,
+        y=y_positions,
+        mode="markers",
+        marker=dict(size=50, color=colors, symbol="star"),
+        hoverinfo="none",
+        showlegend=False
+    ))
+
+    fig.update_layout(
+        title=f"{title} (Avg: {avg_stars:.2f})",
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False),
+        height=200,
+        margin=dict(l=0, r=0, t=40, b=0),
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)"
+    )
+    return fig
+
+
+def build_franchise_graphs(selected_gym: str):
+    df_b, db_r, db_u = load_datasets()
+    figures = {}
+
+    franchise_locations = df_b[df_b["name"] == selected_gym].copy()
+
+    # 1. Map
+    map_fig = go.Figure()
+    map_fig.add_trace(go.Scattermapbox(
+        lat=franchise_locations["latitude"],
+        lon=franchise_locations["longitude"],
+        mode="markers",
+        marker=dict(size=12, color=franchise_locations["stars"],
+                    colorscale="Viridis", showscale=True),
+        text=franchise_locations["address"],
+        hoverinfo="text+lat+lon",
+        name=selected_gym
+    ))
+    map_fig.add_trace(go.Scattermapbox(
+        lat=franchise_locations["latitude"],
+        lon=franchise_locations["longitude"],
+        mode="lines",
+        line=dict(width=2, color="blue"),
+        name="Connections"
+    ))
+    map_fig.update_layout(
+        mapbox=dict(
+            style="carto-positron",
+            center=dict(lat=27.994402, lon=-81.760254),
+            zoom=8
+        ),
+        margin=dict(r=0, t=30, l=0, b=0),
+        title=f"Distribution of {selected_gym} Locations in Florida"
+    )
+    figures["locations_map"] = map_fig
+
+    # 2. Scatter
+    franchise_summary = df_b.groupby("name", as_index=False).agg(
+        avg_stars=("stars", "mean"),
+        num_locations=("business_id", "count"),
+        total_reviews=("review_count", "sum")
+    )
+    bubble_fig = px.scatter(
+        franchise_summary,
+        x="num_locations",
+        y="avg_stars",
+        size="total_reviews",
+        color="avg_stars",
+        hover_name="name",
+        title="Franchise Scale vs Quality",
+        labels={"num_locations": "Number of Locations", "avg_stars": "Average Stars"}
+    )
+    figures["scale_vs_quality"] = bubble_fig
+
+    # 3. Stars
+    avg_stars = float(franchise_locations["stars"].mean())
+    star_fig = horizontal_stars(avg_stars, title=f"Average Rating for {selected_gym}")
+    figures["average_star"] = star_fig
+
+    # 4. Ratings
+    franchise_reviews = db_r[db_r["business_id"].isin(franchise_locations["business_id"])].copy()
+
+    franchise_reviews["date"] = pd.to_datetime(franchise_reviews["date"], errors="coerce")
+
+    monthly_trend = (
+    franchise_reviews
+    .groupby(franchise_reviews["date"].dt.to_period("M"))
+    .agg(avg_stars=("stars", "mean"), review_count=("review_id", "count"))
+    .reset_index())
+
+    monthly_trend["date"] = monthly_trend["date"].astype(str)
+
+    trend_fig = px.line(
+        monthly_trend,
+        x="date",
+        y="avg_stars",
+        title=f"{selected_gym} Ratings Over Time",
+        labels={"date": "Month", "avg_stars": "Average Stars"}
+    )
+    figures["ratings_over_time"] = trend_fig
+
+    # 5. Features
+    features = (
+        franchise_locations["features"]
+        .dropna()
+        .apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+    )
+
+    feature_counts = Counter([f for sublist in features for f in sublist])
+    if feature_counts:
+        feature_fig = px.bar(
+            x=list(feature_counts.values()),
+            y=list(feature_counts.keys()),
+            orientation='h',
+            title=f"Features Profile for {selected_gym}",
+            labels={"x": "Count", "y": "Feature"}
+        )
+    else:
+        feature_fig = go.Figure()
+        feature_fig.add_annotation(
+            text="No feature data available",
+            showarrow=False,
+            x=0.5, y=0.5,
+            xref="paper", yref="paper"
+        )
+    figures["feature_profile"] = feature_fig
+
+    return figures
