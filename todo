@@ -1,8 +1,0 @@
-TODO
-
-	* Normalize the business_hours to store the days and hours into a single column with the next format {"day": (open, close)}
-	  This way, we will have 316 entries in the business_hours df, the same as in business
-
-	* Visualizations are still pending
-
-	* Streamlit dashboard pending as well

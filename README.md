@@ -2,6 +2,10 @@
 
 El proyecto final tiene como objetivo aplicar los conocimientos adquiridos a lo largo del curso para analizar datos reales y proponer una solución de valor para un negocio.
 
+## Dashboard Interactivo
+
+https://florida-gyms.streamlit.app/
+
 ## Requisitos del Proyecto
 
 * Propuesta de negocio: Formular una hipótesis o propuesta que represente una oportunidad o mejora en un sector específico.
@@ -42,3 +46,4 @@ Si deseas limpiar los archivos generados (.db), usa el comando `make clean`.
 ## Consideraciones
 
 * La base de datos que se genera pesa 5.8 GB, asegúrate de tener suficiente espacio.
+
