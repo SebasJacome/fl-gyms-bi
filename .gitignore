@@ -7,9 +7,6 @@ yelp_json/
 # Ignore sqlite3 db
 *.db*
 
-# Ignore parquet files
-*.parquet
-
 # Ignore .ropeproject
 .ropeproject/
 
