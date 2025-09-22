@@ -60,7 +60,8 @@ def show_graphs(graphs):
     chart_texts = [
         "Gyms with mid-range ratings (2.5–3 stars) have the widest variation in review counts, while 5-star gyms tend to have fewer reviews overall, with only a few highly popular outliers.",
         "Most gyms have ratings above 3 stars, with 5-star ratings being the most common.",
-        "Credit card payments and bike parking are the most common features among gyms.",
+        "",
+        "Credit card payments and bike parking are the most common features among gyms.", 
         "Gyms open earlier and close later on weekdays, with reduced hours on weekends.",
         "Most gyms operate between 70–100 hours weekly, regardless of their rating.",
         "Reviews are mostly polarized, with many 1-star and 5-star ratings.",

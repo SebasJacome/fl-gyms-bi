@@ -9,6 +9,9 @@ from folium.plugins import MarkerCluster, HeatMap
 import ast
 from collections import Counter
 import streamlit as st
+import networkx as nx
+from math import radians, sin, cos, sqrt, atan2
+
 
 @st.cache_data
 def load_datasets():
@@ -132,6 +135,41 @@ def build_graphs():
     )
     fig.update_traces(marker=dict(color="darkblue", line=dict(width=1, color="lightblue")))
     graphs.append(fig)
+
+    # Scatter
+    franchise_summary = df_b.groupby("name", as_index=False).agg(
+        avg_stars=("stars", "mean"),
+        num_locations=("business_id", "count"),
+        total_reviews=("review_count", "sum")
+    )
+
+    bins = [0, 3, 6, 10, 20, 50]
+    labels = ["1-3", "4-6", "7-10", "11-20", "21+"]
+
+    franchise_summary["location_group"] = pd.cut(franchise_summary["num_locations"], bins=bins, labels=labels, right=True)
+
+    top_franchises = franchise_summary.sort_values(by="num_locations", ascending=False).head(15)
+
+    color_scale = [
+        [0.0, "red"],
+        [0.5, "yellow"],
+        [1.0, "green"]
+    ]
+
+    fig = px.bar(
+        top_franchises,
+        x="num_locations",
+        y="name",
+        color="avg_stars",
+        color_continuous_scale = color_scale,
+        orientation="h",
+        title="Top 15 Franchises by Number of Locations",
+        labels={"num_locations": "Number of Locations", "name": "Franchise", "avg_stars": "Average Stars"}
+    )
+
+
+    graphs.append(fig)
+
 
     features_expanded = df_b["features"].dropna().apply(pd.Series)
     feature_counts = features_expanded.sum().sort_values(ascending=True)
@@ -291,6 +329,18 @@ def build_graphs():
     graphs.append(fig)
     return graphs
 
+def get_star_color(rating):
+    if rating >= 4.5:
+        return "#2ECC71"
+    elif rating >= 4.0:
+        return "#27AE60"
+    elif rating >= 3.5:
+        return "#F1C40F"
+    elif rating >= 3.0:
+        return "#E67E22"
+    else:
+        return "#E74C3C"
+
 
 def horizontal_stars(avg_stars: float, title: str = "") -> go.Figure:
     total_stars = 5
@@ -303,18 +353,18 @@ def horizontal_stars(avg_stars: float, title: str = "") -> go.Figure:
     colors = []
     for i in range(total_stars):
         if i < full_stars:
-            colors.append("gold")
+            colors.append(get_star_color(avg_stars))
         elif i == full_stars and partial_star > 0:
-            colors.append("goldenrod")
+            colors.append("#A59760")
         else:
-            colors.append("lightgray")
+            colors.append("#ECF0F1")
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=x_positions,
         y=y_positions,
         mode="markers",
-        marker=dict(size=50, color=colors, symbol="star"),
+        marker=dict(size=80, color=colors, symbol="star"),
         hoverinfo="none",
         showlegend=False
     ))
@@ -324,11 +374,69 @@ def horizontal_stars(avg_stars: float, title: str = "") -> go.Figure:
         xaxis=dict(visible=False),
         yaxis=dict(visible=False),
         height=200,
-        margin=dict(l=0, r=0, t=40, b=0),
+        margin=dict(l=0, r=0, t=50, b=0),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)"
     )
     return fig
+
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+    a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+    return 2 * R * atan2(sqrt(a), sqrt(1-a))
+
+def render_features_grid(selected_gym):
+    df_b, _, _ = load_datasets()
+    franchise_locations = df_b[df_b["name"] == selected_gym]
+
+    features = (
+        franchise_locations["features"]
+        .dropna()
+        .apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+    )
+
+    combined_features = {}
+    for feature_dict in features:
+        for key, value in feature_dict.items():
+            if key not in combined_features:
+                combined_features[key] = value
+            else:
+                combined_features[key] = combined_features[key] or value
+
+    if combined_features:
+        sorted_features = dict(sorted(combined_features.items()))
+
+        num_cols = 3
+        cols = st.columns(num_cols)
+
+        for i, (feature, enabled) in enumerate(sorted_features.items()):
+            color = "#2ECC71" if enabled else "#E74C3C"
+            icon = "✅" if enabled else "❌"
+
+            with cols[i % num_cols]:
+                st.markdown(
+                    f"""
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 8px;
+                        margin: 6px 0;
+                        border: 1px solid #444;
+                        border-radius: 10px;
+                        background-color: #2C2C2C;
+                        color: #FFFFFF;
+                        font-size: 16px;
+                        text-align: center;">
+                        <span style="font-size: 18px; margin-right: 8px; color:{color};">{icon}</span> {feature}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+    else:
+        st.info("No feature data available for this franchise.")
 
 
 def build_franchise_graphs(selected_gym: str):
@@ -337,97 +445,188 @@ def build_franchise_graphs(selected_gym: str):
 
     franchise_locations = df_b[df_b["name"] == selected_gym].copy()
 
-    # 1. Map
+    lats = franchise_locations["latitude"].values
+    lons = franchise_locations["longitude"].values
+    n = len(lats)
+
+    G = nx.Graph()
+    for i in range(n):
+        for j in range(i + 1, n):
+            dist = haversine(lats[i], lons[i], lats[j], lons[j])
+            G.add_edge(i, j, weight=dist)
+
+    mst = nx.minimum_spanning_tree(G)
+
+    line_lats = []
+    line_lons = []
+    for edge in mst.edges():
+        i, j = edge
+        line_lats.extend([lats[i], lats[j], None])
+        line_lons.extend([lons[i], lons[j], None])
+
+    hover_text = franchise_locations.apply(
+        lambda row: f"<b>{row['name']}</b><br>⭐ {row['stars']} Stars<br>{row['address']}",
+        axis=1
+    )
+
     map_fig = go.Figure()
+
     map_fig.add_trace(go.Scattermapbox(
         lat=franchise_locations["latitude"],
         lon=franchise_locations["longitude"],
         mode="markers",
-        marker=dict(size=12, color=franchise_locations["stars"],
-                    colorscale="Viridis", showscale=True),
-        text=franchise_locations["address"],
-        hoverinfo="text+lat+lon",
-        name=selected_gym
+        marker=dict(
+            size=14,
+            color=franchise_locations["stars"],
+            colorscale=[
+                [0, "#E74C3C"],
+                [0.5, "#F1C40F"],
+                [1, "#2ECC71"]
+            ],
+            cmin=2.0,
+            cmax=5.0,
+            showscale=True,
+            colorbar=dict(title="Stars")
+        ),
+        hoverinfo=None,
+        name=selected_gym,
+        showlegend=False
     ))
+
     map_fig.add_trace(go.Scattermapbox(
-        lat=franchise_locations["latitude"],
-        lon=franchise_locations["longitude"],
+        lat=line_lats,
+        lon=line_lons,
         mode="lines",
-        line=dict(width=2, color="blue"),
-        name="Connections"
+        line=dict(width=2, color="rgba(52, 152, 219, 0.5)"),
+        name="Shortest Network",
+        showlegend=False,
+        hoverinfo=None
     ))
+
+    map_fig.add_trace(go.Scattermapbox(
+        lat=[franchise_locations.iloc[0]["latitude"]],
+        lon=[franchise_locations.iloc[0]["longitude"]],
+        mode="markers",
+        marker=dict(size=20, color="black", symbol="star"),
+        name="HQ",
+        hoverinfo=None,
+        showlegend=False,
+    ))
+
     map_fig.update_layout(
         mapbox=dict(
             style="carto-positron",
-            center=dict(lat=27.994402, lon=-81.760254),
+            center=dict(lat=np.mean(lats), lon=np.mean(lons)),
             zoom=8
         ),
         margin=dict(r=0, t=30, l=0, b=0),
         title=f"Distribution of {selected_gym} Locations in Florida"
     )
+    
     figures["locations_map"] = map_fig
-
-    # 2. Scatter
-    franchise_summary = df_b.groupby("name", as_index=False).agg(
-        avg_stars=("stars", "mean"),
-        num_locations=("business_id", "count"),
-        total_reviews=("review_count", "sum")
-    )
-    bubble_fig = px.scatter(
-        franchise_summary,
-        x="num_locations",
-        y="avg_stars",
-        size="total_reviews",
-        color="avg_stars",
-        hover_name="name",
-        title="Franchise Scale vs Quality",
-        labels={"num_locations": "Number of Locations", "avg_stars": "Average Stars"}
-    )
-    figures["scale_vs_quality"] = bubble_fig
-
-    # 3. Stars
+    
+    # 2. Stars
     avg_stars = float(franchise_locations["stars"].mean())
     star_fig = horizontal_stars(avg_stars, title=f"Average Rating for {selected_gym}")
     figures["average_star"] = star_fig
 
-    # 4. Ratings
+    # 3. Ratings
+    
     franchise_reviews = db_r[db_r["business_id"].isin(franchise_locations["business_id"])].copy()
-
     franchise_reviews["date"] = pd.to_datetime(franchise_reviews["date"], errors="coerce")
 
     monthly_trend = (
-    franchise_reviews
-    .groupby(franchise_reviews["date"].dt.to_period("M"))
-    .agg(avg_stars=("stars", "mean"), review_count=("review_id", "count"))
-    .reset_index())
+        franchise_reviews
+        .groupby(franchise_reviews["date"].dt.to_period("M"))
+        .agg(avg_stars=("stars", "mean"), review_count=("review_id", "count"))
+        .reset_index()
+    )
 
     monthly_trend["date"] = monthly_trend["date"].astype(str)
+    monthly_trend["rolling_avg"] = monthly_trend["avg_stars"].rolling(window=3, min_periods=1).mean()
 
     trend_fig = px.line(
         monthly_trend,
         x="date",
         y="avg_stars",
         title=f"{selected_gym} Ratings Over Time",
-        labels={"date": "Month", "avg_stars": "Average Stars"}
+        labels={"date": "Month", "avg_stars": "Average Stars"},
+        line_shape="spline"
     )
+    trend_fig.update_traces(line=dict(color="#2ECC71", width=4), name="Monthly Avg")
+
+    trend_fig.add_scatter(
+        x=monthly_trend["date"],
+        y=monthly_trend["rolling_avg"],
+        mode="lines",
+        line=dict(color="#E67E22", width=3, dash="dash"),
+        name="3-Month Avg"
+    )
+
+    trend_fig.add_scatter(
+        x=monthly_trend["date"],
+        y=monthly_trend["avg_stars"],
+        mode="lines",
+        line=dict(color="rgba(46, 204, 113, 0.3)", width=0),
+        fill='tozeroy',
+        fillcolor="rgba(46, 204, 113, 0.2)",
+        name="Rating Area",
+        showlegend=False
+    )
+
+    min_idx = monthly_trend["avg_stars"].idxmin()
+    max_idx = monthly_trend["avg_stars"].idxmax()
+
+    trend_fig.add_annotation(
+        x=monthly_trend.loc[min_idx, "date"],
+        y=monthly_trend.loc[min_idx, "avg_stars"],
+        text="Lowest Rating",
+        showarrow=True,
+        arrowhead=2,
+        font=dict(color="red")
+    )
+
+    trend_fig.add_annotation(
+        x=monthly_trend.loc[max_idx, "date"],
+        y=monthly_trend.loc[max_idx, "avg_stars"],
+        text="Highest Rating",
+        showarrow=True,
+        arrowhead=2,
+        font=dict(color="green")
+    )
+
     figures["ratings_over_time"] = trend_fig
 
-    # 5. Features
+    # 4. Hist
     features = (
         franchise_locations["features"]
         .dropna()
         .apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
     )
 
-    feature_counts = Counter([f for sublist in features for f in sublist])
+    feature_counts = Counter()
+
+    for feature_dict in features:
+        for key, value in feature_dict.items():
+            if value:
+                feature_counts[key] += 1
+
     if feature_counts:
+        feature_df = pd.DataFrame({
+            "Feature": list(feature_counts.keys()),
+            "Count": list(feature_counts.values())
+        }).sort_values(by="Count", ascending=True)
+
         feature_fig = px.bar(
-            x=list(feature_counts.values()),
-            y=list(feature_counts.keys()),
-            orientation='h',
-            title=f"Features Profile for {selected_gym}",
-            labels={"x": "Count", "y": "Feature"}
+            feature_df,
+            x="Count",
+            y="Feature",
+            orientation="h",
+            title=f"Feature Availability Across {selected_gym} Locations",
+            labels={"Count": "Number of Locations", "Feature": "Feature"},
         )
+        feature_fig.update_traces(marker_color="#2ECC71")
+
     else:
         feature_fig = go.Figure()
         feature_fig.add_annotation(
@@ -436,6 +635,7 @@ def build_franchise_graphs(selected_gym: str):
             x=0.5, y=0.5,
             xref="paper", yref="paper"
         )
+
     figures["feature_profile"] = feature_fig
 
     return figures

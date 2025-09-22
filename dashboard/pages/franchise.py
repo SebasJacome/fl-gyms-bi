@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from pages.graphs import build_franchise_graphs, load_datasets
+from pages.graphs import build_franchise_graphs, load_datasets, render_features_grid
 
 st.set_page_config(layout="wide")
 st.title("🏋️ Florida Gyms Franchise Analysis")
@@ -15,7 +15,9 @@ selected_gym = st.selectbox("Choose a franchise", franchises)
 graphs = build_franchise_graphs(selected_gym)
 
 st.plotly_chart(graphs["locations_map"], use_container_width=True)
-st.plotly_chart(graphs["scale_vs_quality"], use_container_width=True)
 st.plotly_chart(graphs["average_star"], use_container_width=True)
 st.plotly_chart(graphs["ratings_over_time"], use_container_width=True)
+st.subheader("Franchise Features")
+render_features_grid(selected_gym)
 st.plotly_chart(graphs["feature_profile"], use_container_width=True)
+
