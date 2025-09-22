@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-
+st.set_page_config(layout="centered")
 st.header("📌 Final Project")
 
 st.write("The final project aims to apply the knowledge acquired throughout the course to analyze real data and propose a valuable solution for a business.")

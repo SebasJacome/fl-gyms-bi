@@ -11,7 +11,9 @@ DB:=./data/gyms.db
 
 .PHONY: run
 run: $(PARQUET)
-	$(PY) atlas.py
+	@echo "Generating WordClouds..."
+	$(PY) nlp.py
+	@echo "Finished successfully. exit code 0"
 
 $(PARQUET): $(DB)
 	@echo "Creating parquet file..."
@@ -22,6 +24,7 @@ $(PARQUET): $(DB)
 $(DB):
 	@echo "Creating SQLite3 database files..."
 	mkdir ./data
+	mkdir ./data/outputs_nlp
 	$(PY) jsons.py
 	@echo "Removing unused rows..."
 	$(PY) processing.py

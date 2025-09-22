@@ -4,6 +4,8 @@ import streamlit as st
 st.sidebar.header("Business Intelligence")
 st.sidebar.text("@ Universidad Panamericana")
 
+st.sidebar.image("./assets/logo_up.png")
+
 pages = {
     "Visualizations": [
         st.Page("./pages/overview.py", title="Overview"),
