@@ -2,6 +2,11 @@ import streamlit as st
 from embedding_atlas.streamlit import embedding_atlas
 from embedding_atlas.projection import compute_text_projection
 import pandas as pd
+import os
+from sentence_transformers import SentenceTransformer
+
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
 
 if "value" not in st.session_state:
     st.session_state.value = "review"
