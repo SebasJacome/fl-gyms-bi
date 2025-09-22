@@ -19,7 +19,7 @@ def tips_atlas():
 
 def show_embedding(df):
     compute_text_projection(
-        df, text="text", x="embedding_x", y="embedding_y", neighbors="neighbors"
+        df, text="text", x="embedding_x", y="embedding_y", neighbors="neighbors", model="all-MiniLM-L6-v2", trust_remote_code=True
     )
     return embedding_atlas(
         df,
