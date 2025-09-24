@@ -1,49 +1,215 @@
-# Proyecto Final Business Intelligence
+# Final Project Business Intelligence
 
-El proyecto final tiene como objetivo aplicar los conocimientos adquiridos a lo largo del curso para analizar datos reales y proponer una solución de valor para un negocio.
+The final project aims to apply the knowledge acquired throughout the course to analyze real-world data and propose a value-driven solution for a business.
 
-## Dashboard Interactivo
+## Interactive Dashboard
 
 https://florida-gyms.streamlit.app/
 
-## Requisitos del Proyecto
+## Project Requirements
 
-* Propuesta de negocio: Formular una hipótesis o propuesta que represente una oportunidad o mejora en un sector específico.
-* EDA (Análisis Exploratorio de Datos): Mostrar cómo están organizados y distribuidos los datos.
-* Metodología de Ciencia de Datos: Aplicar al menos una técnica entre:
-	* Aprendizaje Supervisado
-	* Aprendizaje No Supervisado
-	* Procesamiento de Lenguaje Natural (NLP)
-	* Análisis de Imágenes
-* Visualización y narrativa: Incorporar elementos visuales y storytelling para comunicar hallazgos.
+* Business proposal: Formulate a hypothesis or proposal that represents an opportunity or improvement in a specific sector.
+* EDA (Exploratory Data Analysis): Show how the data is organized and distributed.
+* Data Science Methodology: Apply at least one technique from the following:
+  * Supervised Learning
+  * Unsupervised Learning
+  * Natural Language Processing (NLP)
+  * Image Analysis
+* Visualization and storytelling: Incorporate visual elements and storytelling to effectively communicate findings.
 
-## Requerimientos
+## Requirements
 
-* Se requiere Python (solo se ha testeado con 3.13) y Pip.
-* https://business.yelp.com/data/resources/open-dataset/
-* Se requiere GNU Make
-* Se requiere SQLite3
+* Python is required (only tested with version 3.13) and Pip.
+* Yelp dataset: https://business.yelp.com/data/resources/open-dataset/
+* GNU Make is required.
+* SQLite3 is required.
 
-## Instalación
+## Installation
 
-```
+```bash
 git clone https://github.com/SebasJacome/fl-gyms-bi.git
 cd fl-gyms-bi
 make
 ```
-* Antes de ejecutar todo el programa, asegúrate de tener las dependencias necesarias. Utiliza el comando `make install` para instalarlas.
 
-## Uso
+* Before running the entire program, ensure that all necessary dependencies are installed. Use the command `make install` to install them.
 
-El proyecto se sigue construyendo...
+## Usage
 
-Para correrlo, debes de tener los 4 archivos JSON de la base de datos de Yelp: user, review, business y tip. Estos, deben estar situados en el directorio: ./yelp_json/
+To run the project, you need the 4 JSON files from the Yelp database: `user`, `review`, `business`, and `tip`.  
+These must be located in the directory: `./yelp_json/`
 
-Una vez que tengas estos archivos, puedes usar el comando `make` para correrlo por primera vez. Lo que hara un _build_ completo y tomará un poco de tiempo. Después, al usar el comando `make` por segunda ocasión, tardará menos tiempo en hacer el _build_ si detecta que se generó la base de datos de manera **correcta**.
+It is essential to have all Python libraries installed in your environment before executing the project.  
+You can use the command `make install`, which will create a Python virtual environment with all required dependencies.  
+**Note:** The virtual environment will be created in your home directory.  
+You can modify this location by changing the variables in the `Makefile`.
 
-Si deseas limpiar los archivos generados (.db), usa el comando `make clean`. 
+As mentioned in the requirements, it is crucial to have the Yelp dataset in the specified directory.  
+Once you have these files, you can use the command `make` to run the project for the first time.  
+This will perform a **full build** and may take some time.  
+After the first build, running `make` again will be faster if the system detects that the database was generated **correctly**.
 
-## Consideraciones
+To clean the generated files (`.parquet`), use the command:
 
-* La base de datos que se genera pesa 5.8 GB, asegúrate de tener suficiente espacio.
+```bash
+make clean
+```
+
+## Considerations
+
+* The generated database is approximately **7 GB**, so ensure you have enough disk space.
+* For the Embedding Atlas widget, you can change the model and specify a particular GPU.  
+  For practicality, it is set to default to CPU usage.
+
+---
+
+## Metadata
+## Florida Gyms Dataset Documentation
+
+This dataset is a filtered and transformed version of the original Yelp dataset, focused on gyms located in Florida.  
+It is split into three main tables stored as **Parquet files**:
+
+- **Business Data** → `business.parquet` → loaded as `df_b`  
+- **Review Data** → `review.parquet` → loaded as `db_r`  
+- **Tip Data** → `tip.parquet` → loaded as `db_u`
+
+---
+
+## 1. Business Table (`df_b`)
+
+Contains metadata and attributes for each gym location.
+
+| Column         | Type    | Description                                                                                                                                        |
+|----------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `business_id`  | string  | Unique 22-character identifier for the business.                                                                                                   |
+| `name`         | string  | The gym's name.                                                                                                                                    |
+| `address`      | string  | Street address of the gym.                                                                                                                         |
+| `city`         | string  | City where the gym is located.                                                                                                                     |
+| `state`        | string  | Two-character state code (e.g., `"FL"`).                                                                                                           |
+| `postal_code`  | string  | Postal ZIP code.                                                                                                                                   |
+| `latitude`     | float   | Latitude coordinate of the gym.                                                                                                                    |
+| `longitude`    | float   | Longitude coordinate of the gym.                                                                                                                   |
+| `stars`        | float   | Average star rating (1.0–5.0, rounded to the nearest half star).                                                                                   |
+| `review_count` | int     | Total number of reviews for the gym.                                                                                                               |
+| `is_open`      | int     | `1` if the gym is currently open, `0` if permanently closed.                                                                                       |
+| `working_days` | object  | Dictionary of opening/closing times per weekday. Values are `datetime.time` objects (stored as arrays of `[open, close]`).                         |
+| `features`     | object  | Dictionary of amenity flags. Values can be `true` (available), `false` (not available), or `null` (not specified).                                 |
+
+### `working_days` example
+```json
+{
+  "Monday":   ["06:00", "22:00"],
+  "Tuesday":  ["06:00", "22:00"],
+  "Wednesday":["06:00", "22:00"],
+  "Thursday": ["06:00", "22:00"],
+  "Friday":   ["06:00", "20:00"],
+  "Saturday": ["08:00", "18:00"],
+  "Sunday":   ["09:00", "14:00"]
+}
+```
+
+### `features` example
+```json
+{
+  "AcceptsInsurance": false,
+  "BikeParking": true,
+  "BusinessAcceptsBitcoin": null,
+  "BusinessAcceptsCreditCards": true,
+  "BusinessParking": true,
+  "ByAppointmentOnly": false,
+  "DogsAllowed": false,
+  "GoodForKids": true,
+  "WheelchairAccessible": true,
+  "WiFi": false
+}
+```
+
+## 2. Review Table (``db_r``)
+
+Contains detailed customer reviews for each gym.
+
+| Column        | Type   | Description                                            |
+| ------------- | ------ | ------------------------------------------------------ |
+| `review_id`   | string | Unique 22-character identifier for the review.         |
+| `user_id`     | string | Unique 22-character identifier for the authoring user. |
+| `business_id` | string | Foreign key linking to `df_b.business_id`.             |
+| `stars`       | int    | Star rating given in this review (1–5).                |
+| `date`        | string | Review date in `YYYY-MM-DD` format.                    |
+| `text`        | string | Full text of the review.                               |
+| `useful`      | int    | Number of “useful” votes this review received.         |
+| `funny`       | int    | Number of “funny” votes this review received.          |
+| `cool`        | int    | Number of “cool” votes this review received.           |
+
+### `review` example
+```json
+{
+  "review_id": "xyz456",
+  "user_id": "user789",
+  "business_id": "abc123",
+  "stars": 5,
+  "date": "2024-05-12",
+  "text": "Amazing gym! Super clean and modern equipment.",
+  "useful": 3,
+  "funny": 0,
+  "cool": 1
+}
+``` 
+
+## 3. Tip Table (`db_u`)
+Contains short tips left by users. Tips are quick comments or suggestions and are shorter than reviews.
+
+| **Column**         | **Type** | **Description**                                    |
+| ------------------ | -------- | -------------------------------------------------- |
+| `tip_id`           | `int`    | Unique integer identifier for the tip.             |
+| `text`             | `string` | The content of the tip.                            |
+| `date`             | `string` | Date the tip was posted (`YYYY-MM-DD`).            |
+| `compliment_count` | `int`    | Number of compliments this tip received.           |
+| `business_id`      | `string` | Foreign key linking to `df_b.business_id`.         |
+| `user_id`          | `string` | Foreign key linking to the user who wrote the tip. |
+
+### `Tip` example
+```json
+{
+  "tip_id": 101,
+  "text": "Try their Saturday morning yoga class!",
+  "date": "2024-05-10",
+  "compliment_count": 5,
+  "business_id": "abc123",
+  "user_id": "user789"
+}
+```
+
+## Entity Relationships
+| **From**           | **To**             | **Relationship**               |
+| ------------------ | ------------------ | ------------------------------ |
+| `df_b.business_id` | `db_r.business_id` | One gym can have many reviews. |
+| `df_b.business_id` | `db_u.business_id` | One gym can have many tips.    |
+
+### Summary of Changes from Original Yelp Dataset
+| **Original Field**                          | **Modified Field** | **Description**                                      |
+| ------------------------------------------- | ------------------ | ---------------------------------------------------- |
+| `attributes`                                | `features`         | Simplified into a clean Boolean/nullable dictionary. |
+| `hours`                                     | `working_days`     | Converted to structured opening/closing times.       |
+| `categories`, `checkins`, `photos`, `users` | **Removed**        | Not needed for gym analysis.                         |
+
+
+## Dataset Filtering and Transformation Process
+
+The original Yelp dataset is provided as four large JSON files (`business`, `review`, `tip`, and `user`).  
+To make the data easier to query and process, these files were first **transformed into a structured SQLite database**.
+
+The script begins by creating a database schema that organizes the data into normalized tables:
+- **Business information** is split across multiple tables for core details, attributes, categories, and operating hours.
+- **Reviews**, **users**, and **tips** each have their own dedicated tables, with foreign key relationships linking them back to the businesses.
+
+Once the schema is in place, each JSON file is processed line-by-line to handle its massive size efficiently.  
+Data is inserted into the database using batch operations, which greatly improve performance.  
+For example, the `business` JSON populates the main business table as well as related tables for attributes, categories, and hours.  
+Similarly, the `review`, `tip`, and `user` files populate their respective tables with detailed information about customer feedback, tips, and user metadata.
+
+To speed up the process, all four population functions run **in parallel** using multiple processes.  
+This allows the system to handle the large amount of data more efficiently and reduce overall processing time.
+
+The final result is a fully populated SQLite database (`gyms.db`) containing a clean, relational version of the Yelp dataset.  
+This database serves as the foundation for subsequent filtering steps, such as isolating Florida businesses and focusing specifically on gym-related categories, which are later exported as optimized `.parquet` files for analysis and visualization.
 
