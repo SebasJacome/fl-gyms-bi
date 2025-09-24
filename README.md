@@ -3,6 +3,12 @@
 The final project aims to apply the knowledge acquired throughout the course to analyze real-world data and propose a value-driven solution for a business.
 
 ## Index
+- [Interactive Dashboard](#interactive-dashboard)
+-[Project Requirements](#project-requirements)
+-[Requirements](#requirements)
+-[Installation](#installation)
+-[Usage](#usage)
+-[Considerations](#considerations)
 - [Florida Gyms Dataset Documentation](#florida-gyms-dataset-documentation)
   - [1. Business Table (`df_b`)](#1-business-table-df_b)
     - [working_days Example](#working_days-example)
