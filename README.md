@@ -2,6 +2,23 @@
 
 The final project aims to apply the knowledge acquired throughout the course to analyze real-world data and propose a value-driven solution for a business.
 
+## Index
+- [Florida Gyms Dataset Documentation](#florida-gyms-dataset-documentation)
+  - [1. Business Table (`df_b`)](#1-business-table-df_b)
+    - [working_days Example](#working_days-example)
+    - [features Example](#features-example)
+  - [2. Review Table (`db_r`)](#2-review-table-db_r)
+    - [review Example](#review-example)
+  - [3. Tip Table (`db_u`)](#3-tip-table-db_u)
+    - [Tip Example](#tip-example)
+  - [Entity Relationships](#entity-relationships)
+  - [Summary of Changes from Original Yelp Dataset](#summary-of-changes-from-original-yelp-dataset)
+  - [Dataset Filtering and Transformation Process](#dataset-filtering-and-transformation-process)
+  - [1st Filter: Database to Only Florida Gyms](#1st-filter-database-to-only-florida-gyms)
+  - [2nd Filter: Converting and Merging Data for Analysis](#2nd-filter-converting-and-merging-data-for-analysis)
+
+---
+
 ## Interactive Dashboard
 
 https://florida-gyms.streamlit.app/
@@ -213,3 +230,58 @@ This allows the system to handle the large amount of data more efficiently and r
 The final result is a fully populated SQLite database (`gyms.db`) containing a clean, relational version of the Yelp dataset.  
 This database serves as the foundation for subsequent filtering steps, such as isolating Florida businesses and focusing specifically on gym-related categories, which are later exported as optimized `.parquet` files for analysis and visualization.
 
+## 1st Filter: Database to Only Florida Gyms
+
+After creating the full SQLite database with all Yelp data, the next step is to **filter the dataset** so that it only contains information relevant to **gyms located in Florida**.  
+
+The filtering process includes the following operations:
+
+1. **Remove Non-Florida Gyms**  
+   The script checks the `business` table and keeps only businesses:
+   - Located in Florida (`state = 'FL'`).
+   - Categorized specifically as `"Gyms"` in the `business_categories` table.
+   All other businesses are deleted.
+
+2. **Clean Related Tables**  
+   Once irrelevant businesses are removed, orphaned records in related tables are also cleaned.  
+   This ensures there are no rows referring to businesses that no longer exist in the filtered dataset.
+   - Tables cleaned:  
+     `review`, `tip`, `business_categories`, `business_hours`, `business_attributes`
+
+3. **Remove Unused Users**  
+   The `user` table is then cleaned to keep only users who have either:
+   - Written at least one review, or  
+   - Posted at least one tip  
+   for the remaining Florida gyms.
+
+4. **Database Optimization**  
+   After deletion, the `VACUUM` command is executed to shrink the database size from **several gigabytes (≈6GB)** to just a few megabytes.  
+   This makes the database much lighter and faster for further processing.
+
+The result is a **clean, focused SQLite database** containing only gyms located in Florida and all directly related data, ready for export and analysis.
+
+---
+
+## 2nd Filter: Converting and Merging Data for Analysis
+
+Once the filtered SQLite database (`gyms.db`) is ready, the next step is to **export, clean, and merge** the data into optimized `.parquet` files for analysis and visualization.
+
+The process begins by exporting each table from the database into individual Parquet files.  
+Exporting to Parquet provides faster read/write performance and better storage efficiency through compression.
+
+Two key merge operations are then performed:
+
+1. **Merging Business Hours**  
+   - The `business_hours` table contains one row per day with opening and closing times stored as strings.  
+   - These times are converted into Python `datetime.time` objects and grouped by `business_id`.  
+   - A new column called `working_days` is created, where each row contains a dictionary mapping days of the week to their respective opening and closing times.
+
+2. **Merging Business Attributes**  
+   - The `business_attributes` table contains various key-value pairs about each business (e.g., Wi-Fi availability, parking options).  
+   - Values stored as strings like `"True"`, `"False"`, `"None"`, or nested structures are cleaned and normalized into proper boolean values.  
+   - Features are grouped by `business_id` and stored in a single column called `features`.
+
+The final result is a master file named `business.parquet`, which combines:
+- Core business details  
+- Cleaned working schedules (`working_days`)  
+- Normalized features (`features`)
