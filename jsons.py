@@ -361,29 +361,45 @@ def populate_user_table() -> None:
     print("Successfully populated the user table")
 
 
+# def transform_json_to_sql() -> None:
+#     print("Creating database:")
+#     create_db()
+#     print("Database created successfully\nPopulating tables")
+#     with ProcessPoolExecutor() as e:
+#         futures = [
+#             e.submit(populate_business_table),
+#             e.submit(populate_review_table),
+#             e.submit(populate_tip_table),
+#             e.submit(populate_user_table)
+#         ]
+        
+#         dones, _ = wait(futures)
+
+#         for done in dones:
+#             try:
+#                 done.result()
+#             except FileNotFoundError:
+#                 print("Some file(s) from the Yelp Database was(were) not found")
+#                 print("Make sure to download and store them with the specified format")
+#                 print("./yelp_json/{here the json files}")
+#                 print("https://business.yelp.com/data/resources/open-dataset/")
+#                 sys.exit(1)
+
 def transform_json_to_sql() -> None:
-    print("Creating database:")
+    print("Creating databases:")
     create_db()
     print("Database created successfully\nPopulating tables")
-    with ProcessPoolExecutor() as e:
-        futures = [
-            e.submit(populate_business_table),
-            e.submit(populate_review_table),
-            e.submit(populate_tip_table),
-            e.submit(populate_user_table)
-        ]
-        
-        dones, _ = wait(futures)
-
-        for done in dones:
-            try:
-                done.result()
-            except FileNotFoundError:
-                print("Some file(s) from the Yelp Database was(were) not found")
-                print("Make sure to download and store them with the specified format")
-                print("./yelp_json/{here the json files}")
-                print("https://business.yelp.com/data/resources/open-dataset/")
-                sys.exit(1)
+    try:
+        populate_business_table()
+        populate_review_table()
+        populate_tip_table()
+        populate_user_table()
+    except FileNotFoundError:
+        print("Some file(s) from the Yelp Database was(were) not found")
+        print("Make sure to download and store them with the specified format")
+        print("./yelp_json/{here the json files}")
+        print("https://business.yelp.com/data/resources/open-dataset/")
+        sys.exit(1)
 
 def main() -> int:
     transform_json_to_sql()

@@ -225,7 +225,6 @@ def plot_wc(freqs, title, filename=None, width=1600, height=800):
         out = WC_DIR + '/' + filename
         wc.to_file(str(out))
         print("Guardado:", out)
-    plt.show()
 
 TOP_N_CLOUD = 200
 def top_n_freq(d, n=200):
@@ -234,13 +233,13 @@ def top_n_freq(d, n=200):
 bad_all_freq  = merge_freqs((bad_uni_f, 1.0), (bad_bi_f, 1.25), (bad_tri_f, 1.5))
 good_all_freq = merge_freqs((good_uni_f, 1.0), (good_bi_f, 1.25), (good_tri_f, 1.5))
 
-# plot_wc(top_n_freq(bad_all_freq,  TOP_N_CLOUD),  "Reseñas MALAS — Uni+Bi+Tri (limpios)",  "wc_bad_all.png")
-# plot_wc(top_n_freq(good_all_freq, TOP_N_CLOUD), "Reseñas BUENAS — Uni+Bi+Tri (limpios)", "wc_good_all.png")
+plot_wc(top_n_freq(bad_all_freq,  TOP_N_CLOUD),  "Reseñas MALAS — Uni+Bi+Tri (limpios)",  "wc_bad_all.png")
+plot_wc(top_n_freq(good_all_freq, TOP_N_CLOUD), "Reseñas BUENAS — Uni+Bi+Tri (limpios)", "wc_good_all.png")
 
-# plot_wc(pairs_to_freq(bad_uni_f),  "MALAS — Unigramas (limpios)",  "wc_bad_uni.png")
-# plot_wc(pairs_to_freq(bad_bi_f),   "MALAS — Bigramas (limpios)",   "wc_bad_bi.png")
-# plot_wc(pairs_to_freq(bad_tri_f),  "MALAS — Trigramas (limpios)",  "wc_bad_tri.png")
+plot_wc(pairs_to_freq(bad_uni_f),  "MALAS — Unigramas (limpios)",  "wc_bad_uni.png")
+plot_wc(pairs_to_freq(bad_bi_f),   "MALAS — Bigramas (limpios)",   "wc_bad_bi.png")
+plot_wc(pairs_to_freq(bad_tri_f),  "MALAS — Trigramas (limpios)",  "wc_bad_tri.png")
 
-# plot_wc(pairs_to_freq(good_uni_f), "BUENAS — Unigramas (limpios)", "wc_good_uni.png")
-# plot_wc(pairs_to_freq(good_bi_f),  "BUENAS — Bigramas (limpios)",  "wc_good_bi.png")
-# plot_wc(pairs_to_freq(good_tri_f), "BUENAS — Trigramas (limpios)", "wc_good_tri.png")
+plot_wc(pairs_to_freq(good_uni_f), "BUENAS — Unigramas (limpios)", "wc_good_uni.png")
+plot_wc(pairs_to_freq(good_bi_f),  "BUENAS — Bigramas (limpios)",  "wc_good_bi.png")
+plot_wc(pairs_to_freq(good_tri_f), "BUENAS — Trigramas (limpios)", "wc_good_tri.png")
