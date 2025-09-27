@@ -6,7 +6,7 @@ import os
 from sentence_transformers import SentenceTransformer
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
-model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+#model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
 
 if "value" not in st.session_state:
     st.session_state.value = "review"
