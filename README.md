@@ -22,7 +22,7 @@ The final project aims to apply the knowledge acquired throughout the course to 
   - [Dataset Filtering and Transformation Process](#dataset-filtering-and-transformation-process)
   - [1st Filter: Database to Only Florida Gyms](#1st-filter-database-to-only-florida-gyms)
   - [2nd Filter: Converting and Merging Data for Analysis](#2nd-filter-converting-and-merging-data-for-analysis)
-
+  - [Naturale Language Processing Model](#natural-language-processing)
 ---
 
 ## Interactive Dashboard
@@ -301,5 +301,3 @@ The objective of this section was to use natural language processing (NLP) as a 
 This NLP section separates bad reviews (1-2 stars) and good reviews (4-5 stars), cleans the text, and extracts n-grams (uni/bi/tri) with CountVectorizer. After analyzing the initial results, it was decided to filter out noise (brands, locations, generic phrases, and artifacts) to retain actionable terms. Then, with these final terms, clean word clouds are generated, weighting phrases more than single words to highlight consistent patterns.
 
 With this, we can evaluate, for our project, what to avoid (e.g., cancellation/payment friction, neglected locker rooms) and what to promote (friendly staff, cleanliness, equipment availability).
-
-Translated with DeepL.com (free version)
